@@ -31,25 +31,44 @@ function vectorDistance(vec1, vec2) {
 
 AFRAME.registerComponent('shootable', {
   schema: {
-    shootPosition: { type: 'vec3' },
     bulletScale: { type: 'vec3', default: {x: 1, y: 1, z: 1} },
-    cannon_type: { 
-      default: [],
-      parse: function (value) {
-        return value.split(' ')
-      },
-      stringify: function (value) {
-        return value.join(' ')
-      }
-    }
+    type: { default: ''},
+    velocity: { default: 1 },
+    acceleration: { default: 1 },
+    initialVelocity: { default: 0 }
+    // cannon_details: { 
+    //   default: {},
+    //   parse: function (value) {
+    //     let res = value.split(" ").reduce((obj, str, index) => {
+    //       let strParts = str.split("=")
+    //       if(strParts[0] && strParts[1]) {
+    //         obj[strParts[0].replace(/\s+/g, '')] = strParts[1].trim()
+    //       }
+    //       return obj
+    //     }, {})
+    //     console.log(res)
+    //     return res
+    //   },
+    //   stringify: function (value) {
+    //     let string = ''
+    //     let keys = Object.keys(value)
+    //     keys.forEach((key, index) => {
+    //       string += `${key}=${value[key]}`
+    //       if (index !== keys.length) string += ' '
+    //     })
+    //     console.log(string)
+    //     return string
+    //   }
+    // }
   },
   init: function () {
     let el = this.el
+    console.log(this.data)
     el.addEventListener('click', ev => {
-      if (this.data.cannon_type.length !== 2) return
-      
-      let cannon_type = this.data.cannon_type[0]
-      let bulletSpeed = this.data.cannon_type[1]
+
+      let type = this.data.type
+
+      if (type != 'glb' && type != 'glbb') return
 
       let shootPoint = el.object3D.children[0]
 
@@ -63,10 +82,10 @@ AFRAME.registerComponent('shootable', {
       bullet.setAttribute("position", `${AFRAME.utils.coordinates.stringify(bulletPosition)}`)
       bullet.setAttribute('mixin', 'cannonball')
       
-      if (cannon_type === 'glb') {
-        bullet.setAttribute('static-cannonball', `velocity:${bulletSpeed}; direction:${dir.x} ${dir.y} ${dir.z}`)
-      } else if (cannon_type === 'glbb') {
-        bullet.setAttribute('dynamic-cannonball', `acceleration:${bulletSpeed}; direction${dir.x} ${dir.y} ${dir.z}`)
+      if (type === 'glb') {
+        bullet.setAttribute('static-cannonball', `velocity:${this.data.velocity}; direction:${dir.x} ${dir.y} ${dir.z}`)
+      } else if (type === 'glbb') {
+        bullet.setAttribute('dynamic-cannonball', `acceleration:${this.data.acceleration}; initialVelocity:${this.data.initialVelocity}; direction:${dir.x} ${dir.y} ${dir.z}`)
       }
       console.log(bullet)
       el.sceneEl.appendChild(bullet)
@@ -136,6 +155,20 @@ AFRAME.registerComponent('dynamic-cannonball', {
     this.secondPassed += timeDeltaSeconds
   }
 })
+
+AFRAME.registerComponent('white-cannon', {
+  init: function () {
+    this.el.addEventListener('model-loaded', () => {
+      const obj = this.el.getObject3D('mesh')
+      obj.traverse(node => {
+        console.log(node)
+        if(node.name.indexOf('Object_6') !== -1){
+          node.material.color.set('white')
+        }
+      })
+    })
+  }
+});
 
 
 AFRAME.registerComponent('disposable', {

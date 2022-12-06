@@ -12,18 +12,26 @@
   <script type="text/javascript" src="scripts.js"></script>
   <a-scene id="scene" background="color: #FAFAFA" renderer="colorManagement: true" physics="debug: true">
     <a-assets>
+      <!-- models -->
       <a-asset-item id="cannon_model" src="./models/low-poly_pirate_cannon/scene.gltf"></a-asset-item>
+      
+      <!-- cannonball / bullet -->
       <a-mixin id="cannonball" geometry="primitive: sphere" material="color: black" scale="0.2 0.2 0.2" disposable></a-mixin>
       
+      <!-- cannon -->
       <a-mixin 
         id="cannon" body="type: dynamic; mass: 5; shape:none" 
         shape__barrel="shape:cylinder; height: 3.7; radiusTop: 0.35; radiusBottom: 0.35; orientation: 0 0 0.7071068 0.7071068; offset: .7 1.3 -.08"
         shape__cart="shape:box; halfExtents: 1.5 .5 1; offset: -.1 .5 -.08" 
         gltf-model="#cannon_model" 
         scale="1 1 1" rotation="0 -90 0"
-        shootable="shootPosition: 0 1.075 -1.300; bulletScale: 0.2 0.2 0.2">
+        shootable="bulletScale: 0.2 0.2 0.2">
       </a-mixin>
       <a-mixin id="cannon__shoot-point" position="2.500 1.372 -0.095" rotation="0 90 0 1"></a-mixin>
+      
+      <!-- cannon variants -->
+      <a-mixin id="glbb-cannon" mixin="cannon" shootable="type:glbb" white-cannon></a-mixin>
+      <a-mixin id="glb-cannon" mixin="cannon" shootable="type:glb"></a-mixin>
     
     </a-assets>
     <a-camera position="0 2 5">
@@ -31,8 +39,8 @@
     </a-camera>
     <a-grid static-body></a-grid>
     <a-entity 
-      mixin="cannon" 
-      shootable="cannon_type:glb 5" 
+      mixin="glbb-cannon"
+      shootable="acceleration:5; initialVelocity:0" 
       position="0 2 0">
       <a-entity mixin="cannon__shoot-point"></a-entity>
     </a-entity>
