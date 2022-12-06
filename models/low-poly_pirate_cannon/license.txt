@@ -1,0 +1,11 @@
+Model Information:
+* title:	Low-Poly Pirate Cannon
+* source:	https://sketchfab.com/3d-models/low-poly-pirate-cannon-4fe2b072189e4e48b3154bec73d0879c
+* author:	mderksen (https://sketchfab.com/mderksen)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Low-Poly Pirate Cannon" (https://sketchfab.com/3d-models/low-poly-pirate-cannon-4fe2b072189e4e48b3154bec73d0879c) by mderksen (https://sketchfab.com/mderksen) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

@@ -1,0 +1,11 @@
+Model Information:
+* title:	Simple Cannon
+* source:	https://sketchfab.com/3d-models/simple-cannon-83252a74e71b46139d07c928dfcb85b3
+* author:	Blender3D (https://sketchfab.com/Blender3D)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Simple Cannon" (https://sketchfab.com/3d-models/simple-cannon-83252a74e71b46139d07c928dfcb85b3) by Blender3D (https://sketchfab.com/Blender3D) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
