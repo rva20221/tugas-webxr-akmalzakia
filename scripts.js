@@ -36,30 +36,6 @@ AFRAME.registerComponent('shootable', {
     velocity: { default: 1 },
     acceleration: { default: 1 },
     initialVelocity: { default: 0 }
-    // cannon_details: { 
-    //   default: {},
-    //   parse: function (value) {
-    //     let res = value.split(" ").reduce((obj, str, index) => {
-    //       let strParts = str.split("=")
-    //       if(strParts[0] && strParts[1]) {
-    //         obj[strParts[0].replace(/\s+/g, '')] = strParts[1].trim()
-    //       }
-    //       return obj
-    //     }, {})
-    //     console.log(res)
-    //     return res
-    //   },
-    //   stringify: function (value) {
-    //     let string = ''
-    //     let keys = Object.keys(value)
-    //     keys.forEach((key, index) => {
-    //       string += `${key}=${value[key]}`
-    //       if (index !== keys.length) string += ' '
-    //     })
-    //     console.log(string)
-    //     return string
-    //   }
-    // }
   },
   init: function () {
     let el = this.el
