@@ -50,25 +50,26 @@ AFRAME.registerComponent('shootable', {
       
       let cannon_type = this.data.cannon_type[0]
       let bulletSpeed = this.data.cannon_type[1]
-      
+
+      let shootPoint = el.object3D.children[0]
+
+      let bulletPosition = new THREE.Vector3()
+      let dir = new THREE.Vector3()
+
+      shootPoint.getWorldPosition(bulletPosition)
+      shootPoint.getWorldDirection(dir)
+
       let bullet = document.createElement("a-entity")
-      let scale = { ...el.getAttribute('scale') }
-      let shootPosition = { ...this.data.shootPosition}
-      let bulletScale = { ...this.data.bulletScale}
-      let objectPosition = divideVector(shootPosition, scale)
-      let objectScale = divideVector(bulletScale, scale)
-      bullet.setAttribute("position", `${AFRAME.utils.coordinates.stringify(objectPosition)}`)
-      bullet.setAttribute("scale", `${AFRAME.utils.coordinates.stringify(objectScale)}`)
+      bullet.setAttribute("position", `${AFRAME.utils.coordinates.stringify(bulletPosition)}`)
+      bullet.setAttribute('mixin', 'cannonball')
       
       if (cannon_type === 'glb') {
-        bullet.setAttribute('mixin', 'cannonball')
-        bullet.setAttribute('static-cannonball', `velocity:${bulletSpeed};parentScale:${scale.x}`)
+        bullet.setAttribute('static-cannonball', `velocity:${bulletSpeed}; direction:${dir.x} ${dir.y} ${dir.z}`)
       } else if (cannon_type === 'glbb') {
-        bullet.setAttribute('mixin', 'cannonball')
-        bullet.setAttribute('dynamic-cannonball', `acceleration:${bulletSpeed};parentScale:${scale.x}`)
+        bullet.setAttribute('dynamic-cannonball', `acceleration:${bulletSpeed}; direction${dir.x} ${dir.y} ${dir.z}`)
       }
       console.log(bullet)
-      el.appendChild(bullet)
+      el.sceneEl.appendChild(bullet)
     })
   }
 });
@@ -80,20 +81,25 @@ AFRAME.registerComponent('shootable', {
 AFRAME.registerComponent('static-cannonball', {
   schema: {
     velocity: {default: 0},
-    parentScale: {default: 1}
+    direction: { type: 'vec3', default: {x: 1, y: 1, z: 1} }
   },
 
   init: function () {
     let el = this.el
     this.initialPosition = { ...el.getAttribute('position')}
     this.secondPassed = 0
+    console.log(this.data.direction)
     console.log('init static cannonball with v:' + this.data.velocity)
   },
 
   tick: function (time, timeDelta) {
     let position = this.el.getAttribute('position')
-    position.z += (this.data.velocity * timeDelta * 0.001 / this.data.parentScale)
-    this.secondPassed += timeDelta * 0.001
+    const timeDeltaSeconds = timeDelta * 0.001
+    // if (this.secondPassed >= 1) console.log(position.z - this.initialPosition.z)
+    position.x += (this.data.direction.x * this.data.velocity  * timeDeltaSeconds)
+    position.y += (this.data.direction.y * this.data.velocity  * timeDeltaSeconds)
+    position.z += (this.data.direction.z * this.data.velocity  * timeDeltaSeconds)
+    this.secondPassed += timeDeltaSeconds
   }
 });
 
@@ -102,7 +108,7 @@ AFRAME.registerComponent('dynamic-cannonball', {
   schema: {
     acceleration: {default: 0},
     initialVelocity: {default: 0},
-    parentScale: {default: 1}
+    direction: { type: 'vec3', default: {x: 1, y: 1, z: 1} }
   },
 
   init: function () {
@@ -122,14 +128,19 @@ AFRAME.registerComponent('dynamic-cannonball', {
 
   tick: function (time, timeDelta) {
     let position = this.el.getAttribute('position')
-    this.velocity += this.data.acceleration * timeDelta * 0.001
+    const timeDeltaSeconds = timeDelta * 0.001
+    this.velocity += this.data.acceleration * timeDeltaSeconds
+    position.x += (this.data.direction.x * this.velocity  * timeDeltaSeconds)
+    position.y += (this.data.direction.y * this.velocity  * timeDeltaSeconds)
+    position.z += (this.data.direction.z * this.velocity  * timeDeltaSeconds)
+    this.secondPassed += timeDeltaSeconds
   }
-});
+})
 
 
 AFRAME.registerComponent('disposable', {
   schema: {
-    timeout: {default: 30}
+    timeout: {default: 10}
   },
   init: function () {
     setTimeout(() => {
