@@ -6,17 +6,22 @@
   <script src="https://aframe.io/releases/1.1.0/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v6.1.1/dist/aframe-extras.min.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/n5ro/aframe-physics-system@v4.0.1/dist/aframe-physics-system.min.js"></script>
+  <script src="https://unpkg.com/aframe-physics-extras@0.1.2/dist/aframe-physics-extras.min.js"></script>
+  <script src="https://unpkg.com/aframe-event-set-component@5.0.0/dist/aframe-event-set-component.min.js"></script>
+  <script src="https://unpkg.com/super-hands@^3.0.3/dist/super-hands.min.js"></script>
+  <script src="https://rawgit.com/rdub80/aframe-gui/master/dist/aframe-gui.min.js"></script>
+  <script src="https://unpkg.com/aframe-environment-component@1.1.0/dist/aframe-environment-component.min.js"></script>
   <title>Document</title>
 </head>
 <body>
   <script type="text/javascript" src="scripts.js"></script>
-  <a-scene id="scene" background="color: #FAFAFA" renderer="colorManagement: true" physics="debug: true">
+  <a-scene id="scene" background="color: #FAFAFA" renderer="colorManagement: true" physics="debug: false">
     <a-assets>
       <!-- models -->
       <a-asset-item id="cannon_model" src="./models/low-poly_pirate_cannon/scene.gltf"></a-asset-item>
       
       <!-- cannonball / bullet -->
-      <a-mixin id="cannonball" geometry="primitive: sphere" material="color: black" scale="0.2 0.2 0.2" disposable></a-mixin>
+      <a-mixin id="cannonball" geometry="primitive: sphere" material="color: black" scale="0.2 0.2 0.2"></a-mixin>
       
       <!-- cannon -->
       <a-mixin 
@@ -24,28 +29,363 @@
         shape__barrel="shape:cylinder; height: 3.7; radiusTop: 0.35; radiusBottom: 0.35; orientation: 0 0 0.7071068 0.7071068; offset: .7 1.3 -.08"
         shape__cart="shape:box; halfExtents: 1.5 .5 1; offset: -.1 .5 -.08" 
         gltf-model="#cannon_model" 
-        scale="1 1 1" rotation="0 -90 0"
-        shootable="bulletScale: 0.2 0.2 0.2">
+        scale="1 1 1"
+        shootable="bulletScale: 0.2 0.2 0.2"
+      >
       </a-mixin>
       <a-mixin id="cannon__shoot-point" position="2.500 1.372 -0.095" rotation="0 90 0 1"></a-mixin>
       
       <!-- cannon variants -->
-      <a-mixin id="glbb-cannon" mixin="cannon" shootable="type:glbb" white-cannon></a-mixin>
-      <a-mixin id="glb-cannon" mixin="cannon" shootable="type:glb"></a-mixin>
+      <a-mixin id="glbb-cannon-mixin" mixin="cannon" shootable="type:glbb" white-cannon></a-mixin>
+      <a-mixin id="glb-cannon-mixin" mixin="cannon" shootable="type:glb"></a-mixin>
+
+      <a-mixin id="pointer" raycaster="showLine: true; objects: .clickable"
+        collision-filter="collisionForces: false"
+        static-body="shape: sphere; sphereRadius: 0.001"
+        super-hands="colliderEvent: raycaster-intersection;
+                     colliderEventProperty: els;
+                     colliderEndEvent:raycaster-intersection-cleared;
+                     colliderEndEventProperty: clearedEls;"
+      >
+      </a-mixin>
+
+      <a-mixin 
+        id="physics-hands"
+        physics-collider phase-shift
+        collision-filter="collisionForces: false"
+        static-body="shape: sphere; sphereRadius: 0.02"
+        super-hands="colliderEvent: collisions;
+                     colliderEventProperty: els;
+                     colliderEndEvent: collisions;
+                     colliderEndEventProperty: clearedEls;"
+      ></a-mixin>
+
+      <a-mixin id="controller-right" mixin="pointer"
+        vive-controls="hand: right" oculus-touch-controls="hand: right"
+        windows-motion-controls="hand: right"
+        gearvr-controls daydream-controls oculus-go-controls>
+      </a-mixin>
+      <a-mixin id="controller-left" mixin="pointer"
+        vive-controls="hand: left" oculus-touch-controls="hand: left"
+        windows-motion-controls="hand: left">
+      </a-mixin>
     
     </a-assets>
-    <a-camera position="0 2 5">
-      <a-cursor></a-cursor>
-    </a-camera>
-    <a-grid static-body></a-grid>
+    <a-entity environment="preset: forest"></a-entity>
+    <a-entity id="rig" movement-controls>
+      <a-entity 
+        camera
+        position="0 1.6 0"
+        look-controls="pointerLockEnabled: false">
+        <a-cursor></a-cursor>
+      </a-entity>
+      <a-entity id="rhand" mixin="controller-right pointer">
+        <a-gui-cursor id="rgui-cursor"
+						  raycaster="objects: [gui-interactable]"
+						  fuse="false"
+				>
+				</a-gui-cursor>
+      </a-entity>
+      <a-entity id="lhand" mixin="controller-left pointer">
+        <a-gui-cursor id="lgui-cursor"
+						  raycaster="objects: [gui-interactable]"
+						  fuse="false"
+				>
+				</a-gui-cursor>
+      </a-entity>
+    </a-entity>
+    
+    <a-box static-body position="0 -0.3 0" scale="100 0.5 100"></a-box>
+
+    <!-- cannons -->
     <a-entity 
-      mixin="glbb-cannon"
+      id="glbb-cannon"
+      class="clickable"
+      mixin="glbb-cannon-mixin"
       shootable="acceleration:5; initialVelocity:0" 
-      position="0 2 0">
+      position="3 1 -5"
+      rotation="0 90 0"
+    >
       <a-entity mixin="cannon__shoot-point"></a-entity>
     </a-entity>
-    <a-sphere dynamic-body position="0 5 -5" radius="1.25" color="#EF2D5E" shadow></a-sphere>
-    <a-cylinder position="1 0.75 -3" radius="0.5" height="1.5" color="#FFC65D" shadow></a-cylinder>
+
+    <a-entity 
+      id="glb-cannon"
+      class="clickable"
+      mixin="glb-cannon-mixin"
+      shootable="velocity: 5" 
+      position="-3 1 -5"
+      rotation="0 90 0"
+    >
+      <a-entity mixin="cannon__shoot-point"></a-entity>
+    </a-entity>
+
+    <a-gui-flex-container
+      id="glb-cannon-gui"
+      flex-direction="column" justify-content="center" align-items="normal" component-padding="0.1" opacity="0.7" width="3" height="3"
+      panel-color="#072B73"
+      panel-rounded="0.2"
+      position="-6 2 -4"
+      rotation="-20 45 0"
+      
+    >
+      <a-gui-label
+        width="2" height=".3"
+        value="GLB Velocity (0 - 10)"
+        font-family="fonts/Montserrat/static/Montserrat-Medium.ttf"
+        font-size="0.15"
+        line-height=".8"
+        letter-spacing="0"
+      ></a-gui-label>
+
+      <a-gui-slider
+        id="velocity-slider"
+        class="clickable"
+        width="2" height="0.3"
+        onclick="changeVelocity"
+        percent="0.29"
+        margin="0 0 0 0"
+      >
+      </a-gui-slider>
+
+      <a-gui-label
+        id="velocity-display"
+        width="2" height=".3"
+        value="Velocity : 2.9"
+        font-family="fonts/Montserrat/static/Montserrat-Medium.ttf"
+        font-size="0.15"
+        line-height=".8"
+        letter-spacing="0"
+      ></a-gui-label>
+      
+      
+
+    </a-gui-flex-container>
+
+    <a-gui-flex-container
+      id="glb-cannon-watcher-gui"
+      flex-direction="column" justify-content="center" align-items="normal" component-padding="0.1" opacity="0.7" width="3" height="3"
+      panel-color="#072B73"
+      panel-rounded="0.2"
+      position="-8.2 2 -1.75"
+      rotation="-20 45 0"
+      
+    >
+
+      <a-gui-toggle
+        id="glb-watcher-toggle"
+        class="clickable"
+        width="2" height=".3"
+        value="Watcher Type"
+        font-family="fonts/Montserrat/static/Montserrat-Medium.ttf"
+        font-size="0.15"
+        line-height=".8"
+        letter-spacing="0"
+        onclick="changeGLBWatcherType"
+      ></a-gui-toggle>
+
+      <a-gui-label
+        id="glb-watcher-toggle-display"
+        width="2" height=".3"
+        value="Time"
+        font-family="fonts/Montserrat/static/Montserrat-Medium.ttf"
+        font-size="0.15"
+        line-height=".8"
+        letter-spacing="0"
+        margin="0 0 .1 0"
+      ></a-gui-label>
+
+      <a-gui-label
+        width="2" height=".3"
+        value="Watcher Value"
+        font-family="fonts/Montserrat/static/Montserrat-Medium.ttf"
+        font-size="0.15"
+        line-height=".8"
+        letter-spacing="0"
+      ></a-gui-label>
+
+      <a-gui-slider
+        id="glb-watcher-value"
+        class="clickable"
+        width="2" height="0.3"
+        onclick="changeGLBWatcherValue"
+        percent="0.29"
+        margin="0 0 0 0"
+      >
+      </a-gui-slider>
+
+      <a-gui-label
+        id="glb-watcher-value-display"
+        width="2" height=".3"
+        value="Value : 2.9"
+        font-family="fonts/Montserrat/static/Montserrat-Medium.ttf"
+        font-size="0.15"
+        line-height=".8"
+        letter-spacing="0"
+      ></a-gui-label>
+
+    </a-gui-flex-container>
+
+
+    <a-gui-flex-container
+      id="glbb-cannon-gui"
+      flex-direction="column" justify-content="center" align-items="normal" component-padding="0.1" opacity="0.7" width="3" height="3"
+      panel-color="#072B73"
+      panel-rounded="0.2"
+      position="6 2 -4"
+      rotation="-20 -45 0"
+    >
+      <a-gui-label
+        width="2" height=".3"
+        value="GLBB Acceleration (0 - 10)"
+        font-family="fonts/Montserrat/static/Montserrat-Medium.ttf"
+        font-size="0.1"
+        line-height=".8"
+        letter-spacing="0"
+      ></a-gui-label>
+
+      <a-gui-slider
+        id="acceleration-slider"
+        class="clickable"
+        width="2" height="0.3"
+        onclick="changeAcceleration"
+        percent="0.29"
+      >
+      </a-gui-slider>
+
+      <a-gui-label
+        id="acceleration-display"
+        width="2" height=".3"
+        value="Acceleration : 2.9"
+        font-family="fonts/Montserrat/static/Montserrat-Medium.ttf"
+        font-size="0.15"
+        line-height=".8"
+        letter-spacing="0"
+        margin="0 0 .1 0"
+      ></a-gui-label>
+
+      <a-gui-label
+        width="2" height=".3"
+        value="GLBB Initial Velocity (0 - 10)"
+        font-family="fonts/Montserrat/static/Montserrat-Medium.ttf"
+        font-size="0.1"
+        line-height=".8"
+        letter-spacing="0"
+      ></a-gui-label>
+
+      <a-gui-slider
+        id="initial-velocity-slider"
+        class="clickable"
+        width="2" height="0.3"
+        onclick="changeInitialVelocity"
+        percent="0.29"
+        margin="0 0 0 0"
+      >
+      </a-gui-slider>
+
+      <a-gui-label
+        id="initial-velocity-display"
+        width="2" height=".3"
+        value="Initial Velocity : 2.9"
+        font-family="fonts/Montserrat/static/Montserrat-Medium.ttf"
+        font-size="0.15"
+        line-height=".8"
+        letter-spacing="0"
+      ></a-gui-label>
+  
+    </a-gui-flex-container>
+    
+    <a-gui-flex-container
+      id="glbb-cannon-watcher-gui"
+      flex-direction="column" justify-content="center" align-items="normal" component-padding="0.1" opacity="0.7" width="3" height="3"
+      panel-color="#072B73"
+      panel-rounded="0.2"
+      position="8.2 2 -1.75"
+      rotation="-20 -45 0"
+      
+    >
+
+      <a-gui-toggle
+        id="glbb-watcher-toggle"
+        class="clickable"
+        width="2" height=".3"
+        value="Watcher Type"
+        font-family="fonts/Montserrat/static/Montserrat-Medium.ttf"
+        font-size="0.15"
+        line-height=".8"
+        letter-spacing="0"
+        onclick="changeGLBBWatcherType"
+      ></a-gui-toggle>
+
+      <a-gui-label
+        id="glbb-watcher-toggle-display"
+        width="2" height=".3"
+        value="Time"
+        font-family="fonts/Montserrat/static/Montserrat-Medium.ttf"
+        font-size="0.15"
+        line-height=".8"
+        letter-spacing="0"
+        margin="0 0 .1 0"
+      ></a-gui-label>
+
+      <a-gui-label
+        width="2" height=".3"
+        value="Watcher Value"
+        font-family="fonts/Montserrat/static/Montserrat-Medium.ttf"
+        font-size="0.15"
+        line-height=".8"
+        letter-spacing="0"
+      ></a-gui-label>
+
+      <a-gui-slider
+        id="glbb-watcher-value"
+        class="clickable"
+        width="2" height="0.3"
+        onclick="changeGLBBWatcherValue"
+        percent="0.29"
+        margin="0 0 0 0"
+      >
+      </a-gui-slider>
+
+      <a-gui-label
+        id="glbb-watcher-value-display"
+        width="2" height=".3"
+        value="Value : 2.9"
+        font-family="fonts/Montserrat/static/Montserrat-Medium.ttf"
+        font-size="0.15"
+        line-height=".8"
+        letter-spacing="0"
+      ></a-gui-label>
+
+    </a-gui-flex-container>
+    
+    <a-box position="-3 5 -5.5" rotation="10 0 0" width="5" height="3" depth=".001">
+      <a-text value="GLB Log" wrap-count="30" width="6" position="0 1 0" align="center"></a-text>
+      <a-text value="Velocity" wrap-count="15" width="2" position="-1.5 0 0" align="center">
+        <a-text id="glb-v-log-value" value="0" wrap-count="15" width="2" position="0 -.5 0" align="center"></a-text>
+      </a-text>
+      <a-text value="Distance" wrap-count="15" width="2" position="0 0 0" align="center">
+        <a-text id="glb-s-log-value" value="0" wrap-count="15" width="2" position="0 -.5 0" align="center"></a-text>
+      </a-text>
+      <a-text value="Time" wrap-count="15" width="2" position="1.5 0 0" align="center">
+        <a-text id="glb-t-log-value" value="0" wrap-count="15" width="2" position="0 -.5 0" align="center"></a-text>
+      </a-text>
+    </a-box>
+    <a-box position="3 5 -5.5" rotation="10 0 0" width="5" height="3" depth=".001">
+      <a-text value="GLBB Log" wrap-count="30" width="6" position="0 1 0" align="center"></a-text>
+      <a-text value="Velocity" wrap-count="15" width="2" position="-2 0 0" align="center">
+        <a-text id="glbb-v-log-value" value="0" wrap-count="15" width="2" position="0 -.5 0" align="center"></a-text>
+      </a-text>
+      <a-text value="Acceleration" wrap-count="15" width="2" position="-.5 0 0" align="center">
+        <a-text id="glbb-a-log-value" value="0" wrap-count="15" width="2" position="0 -.5 0" align="center"></a-text>
+      </a-text>
+      <a-text value="Distance" wrap-count="15" width="2" position="1 0 0" align="center">
+        <a-text id="glbb-s-log-value" value="0" wrap-count="15" width="2" position="0 -.5 0" align="center"></a-text>
+      </a-text>
+      <a-text value="Time" wrap-count="15" width="2" position="2 0 0" align="center">
+        <a-text id="glbb-t-log-value" value="0" wrap-count="15" width="2" position="0 -.5 0" align="center"></a-text>
+      </a-text>
+    </a-box>
   </a-scene>
 </body>
 </html>
